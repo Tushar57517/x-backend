@@ -36,3 +36,19 @@ class RegisterSerializer(serializers.ModelSerializer):
             )
         
         return user
+    
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)
+
+    def validate(self, data):
+        user = User.objects.filter(email=data['email']).first()
+
+        if not user:
+            return serializers.ValidationError("user not found")
+        if not user.is_active:
+            return serializers.ValidationError("email not verified")
+        if not user.check_password(data['password']):
+            return serializers.ValidationError('incorrect password')
+
+        return user
